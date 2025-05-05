@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circles -->
+  <circle cx="100" cy="100" r="90" fill="#f2f6ff" />
+  <circle cx="100" cy="100" r="80" fill="#e4eaff" />
+  
+  <!-- Clipboard Base -->
+  <path d="M60 40 L140 40 L140 170 L60 170 Z" fill="#ffffff" stroke="#4338ca" stroke-width="3" />
+  
+  <!-- Clipboard Top -->
+  <path d="M75 30 C75 20, 125 20, 125 30 L125 48 L75 48 Z" fill="#ffffff" stroke="#4338ca" stroke-width="3" />
+  
+  <!-- Clip -->
+  <rect x="95" y="22" width="10" height="16" rx="5" fill="#4338ca" />
+  
+  <!-- Checkmarks and X -->
+  <g stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- First Item - Checkmark -->
+    <line x1="75" y1="70" x2="125" y2="70" stroke="#e5e7eb" />
+    <circle cx="80" cy="70" r="10" fill="#4ade80" />
+    <path d="M75 70 L80 75 L85 65" stroke="white" stroke-width="2" fill="none" />
+    
+    <!-- Second Item - Checkmark -->
+    <line x1="75" y1="100" x2="125" y2="100" stroke="#e5e7eb" />
+    <circle cx="80" cy="100" r="10" fill="#4ade80" />
+    <path d="M75 100 L80 105 L85 95" stroke="white" stroke-width="2" fill="none" />
+    
+    <!-- Third Item - X mark -->
+    <line x1="75" y1="130" x2="125" y2="130" stroke="#e5e7eb" />
+    <circle cx="80" cy="130" r="10" fill="#f87171" />
+    <path d="M76 126 L84 134 M84 126 L76 134" stroke="white" stroke-width="2" />
+  </g>
+  
+  <!-- Pencil -->
+  <g transform="translate(145, 75) rotate(45)">
+    <rect x="-5" y="-40" width="10" height="60" fill="#fbbf24" />
+    <polygon points="-5,-40 5,-40 0,-50" fill="#4338ca" />
+    <rect x="-5" y="20" width="10" height="5" fill="#d1d5db" />
+  </g>
+  
+  <!-- Abstract Line Graph in Bottom Right -->
+  <polyline points="70,150 85,140 100,145 115,130 130,138" 
+            fill="none" stroke="#4338ca" stroke-width="2" stroke-linejoin="round" />
+  
+  <!-- Small Decorative Elements -->
+  <circle cx="122" cy="70" r="3" fill="#4338ca" />
+  <circle cx="110" cy="70" r="3" fill="#4338ca" />
+  <circle cx="122" cy="100" r="3" fill="#4338ca" />
+  <circle cx="110" cy="100" r="3" fill="#4338ca" />
+  <circle cx="122" cy="130" r="3" fill="#4338ca" />
+  <circle cx="110" cy="130" r="3" fill="#4338ca" />
+</svg>
