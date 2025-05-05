@@ -36,6 +36,7 @@ app.use('/logout', require('./backend/routes/logout'))
 // protected routes
 app.use(verifyJWT);
 
+app.use('/test', require('./backend/routes/test'))
 
 app.use((req, res, next) => {
     console.log(`Unmatched route: ${req.method} ${req.originalUrl}`);
