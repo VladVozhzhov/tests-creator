@@ -9,6 +9,7 @@ const userSchema = new Schema ({
         Editor: Number,
         Admin: Number
     },
+    likedTests: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Test' } ],
     createdTests: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Test' } ],
     refreshToken: { type: String, required: false },
 }, { timestamps: true })

@@ -12,6 +12,8 @@ const testSchema = new Schema ({
             points: { type: Number, required: true }
         }
     ],
+    visits: { type: Number, default: 0 },
+    likes: { type: Number, default: 0 },
     author: { type: String, required: true }
 }, { timestamps: true })
 

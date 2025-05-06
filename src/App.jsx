@@ -6,6 +6,7 @@ import Auth from "./components/Auth"
 import TestHome from './components/TestHome'
 import Create from "./components/Create";
 import TestPage from "./components/TestPage";
+import UserPage from "./components/UserPage";
 import Total from "./components/Total";
 
 axios.defaults.withCredentials = true;
@@ -19,6 +20,7 @@ function App() {
       <Route path='/test' element={<TestHome />} />
       <Route path='/test/create' element={<Create />}/>
       <Route path='/test/:id' element={<TestPage />}/>
+      <Route path='/test/user/:name' element={<UserPage />}/>
       <Route path='/test/:id/total' element={<Total />}/>
     </Routes>
   )
