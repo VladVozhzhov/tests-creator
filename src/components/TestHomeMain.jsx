@@ -1,13 +1,19 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DataContext } from '../context/DataContext';
 import TestCard from './TestCard';
 import { PlusCircle } from 'lucide-react';
+import CreatorHallOfFame from './CreatorHallOfFame';
+
+const PAGE_SIZE = 9;
 
 const TestHomeMain = () => {
   const { selected, sortedTests, loading, error } = useContext(DataContext);
+  const [page, setPage] = useState(1);
 
-  // Function to render grid of tests
+  const totalPages = Math.ceil(sortedTests.length / PAGE_SIZE);
+  const pagedTests = sortedTests.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const renderTests = () => {
     if (loading) {
       return (
@@ -40,11 +46,40 @@ const TestHomeMain = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedTests.map((test) => (
-          <TestCard key={test._id} test={test} />
-        ))}
-      </div>
+      <>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pagedTests.map((test) => (
+            <TestCard key={test._id} test={test} />
+          ))}
+        </div>
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8 gap-2">
+            <button
+              className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Prev
+            </button>
+            {Array.from({ length: totalPages }).map((_, idx) => (
+              <button
+                key={idx}
+                className={`px-3 py-1 rounded ${page === idx + 1 ? 'bg-indigo-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                onClick={() => setPage(idx + 1)}
+              >
+                {idx + 1}
+              </button>
+            ))}
+            <button
+              className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </>
     );
   };
 
@@ -73,6 +108,8 @@ const TestHomeMain = () => {
         
         {renderTests()}
       </section>
+
+      <CreatorHallOfFame />
     </main>
   );
 };

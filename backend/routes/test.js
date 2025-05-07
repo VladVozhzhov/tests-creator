@@ -6,6 +6,7 @@ router
     .get('/', testController.handleGetAllTests)
     .get('/my-tests', testController.handleGetUserTests)
     .get('/user/:userId', testController.handleGetUserTests)
+    .get('/by-username/:username', testController.handleGetTestsByUsername)
     .get('/:id', testController.handleGetTest)
     .get('/:id/status', testController.handleTestStatus)
     .get('/:id/results', testController.handleTestResults)

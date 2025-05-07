@@ -48,17 +48,27 @@ const Total = () => {
   };
 
   const getCorrectAnswer = (question) => {
-    if (Array.isArray(question.correctAnswer)) {
-      return question.correctAnswer.map(key => question.answersList[key]).join(', ');
+    if (!question || !question.answersList) {
+      return question?.correctAnswer || <span className="italic text-gray-400">No answer</span>;
     }
-    return question.answersList[question.correctAnswer] || question.correctAnswer;
+    if (Array.isArray(question.correctAnswer)) {
+      return question.correctAnswer
+        .map(key => question.answersList[String(key)] || key)
+        .join(', ');
+    }
+    return question.answersList[String(question.correctAnswer)] || question.correctAnswer;
   };
 
   const getUserAnswer = (question, userAnswer) => {
-    if (Array.isArray(userAnswer)) {
-      return userAnswer.map(key => question.answersList[key] || key).join(', ');
+    if (!question || !question.answersList) {
+      return userAnswer || <span className="italic text-gray-400">No answer</span>;
     }
-    return question.answersList[userAnswer] || userAnswer || <span className="italic text-gray-400">No answer</span>;
+    if (Array.isArray(userAnswer)) {
+      return userAnswer
+        .map(key => question.answersList[String(key)] || key)
+        .join(', ');
+    }
+    return question.answersList[String(userAnswer)] || userAnswer || <span className="italic text-gray-400">No answer</span>;
   };
 
   if (loading) {

@@ -16,20 +16,32 @@ const handleGetTest = async (req, res) => {
   }
 };
 
-// Get all tests created by a user
+// Get all tests created by a user (by ObjectId)
 const handleGetUserTests = async (req, res) => {
   try {
     const userId = req.params.userId || req.user._id;
-    
     const user = await User.findById(userId)
       .populate('createdTests')
       .exec();
-      
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
     res.json(user.createdTests || []);
   } catch (err) {
     console.error('Error fetching user tests:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get all tests created by a user (by username)
+const handleGetTestsByUsername = async (req, res) => {
+  try {
+    const username = req.params.username;
+    const user = await User.findOne({ username })
+      .populate('createdTests')
+      .exec();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user.createdTests || []);
+  } catch (err) {
+    console.error('Error fetching user tests by username:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -174,21 +186,21 @@ const handleSubmitTest = async (req, res) => {
     function arraysEqual(a, b) {
       if (!Array.isArray(a) || !Array.isArray(b)) return false;
       if (a.length !== b.length) return false;
-      const sortedA = [...a].sort();
-      const sortedB = [...b].sort();
+      const sortedA = [...a].map(String).sort();
+      const sortedB = [...b].map(String).sort();
       return sortedA.every((val, idx) => val === sortedB[idx]);
     }
-    
+
     let totalScore = 0;
     const questionResults = test.questions.map((question, index) => {
       const userAnswer = answers[index];
-      const isCorrect = Array.isArray(question.correctAnswer) 
+      const isCorrect = Array.isArray(question.correctAnswer)
         ? arraysEqual(question.correctAnswer, userAnswer)
-        : question.correctAnswer === userAnswer;
-      
+        : String(question.correctAnswer) === String(userAnswer);
+
       const pointsEarned = isCorrect ? (question.points || 1) : 0;
       totalScore += pointsEarned;
-      
+
       return {
         questionId: question._id,
         correct: isCorrect,
@@ -273,4 +285,5 @@ module.exports = {
     handleTestStatus,
     handleTestResults,
     handleLikeTest,
+    handleGetTestsByUsername,
 };
