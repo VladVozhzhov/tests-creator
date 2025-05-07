@@ -28,15 +28,15 @@ app.use('/', express.static(path.join(__dirname, '/public')));
 
 // routes
 app.use('/', require('./backend/routes/root'));
-app.use('/register', require('./backend/routes/register'));
-app.use('/auth', require('./backend/routes/auth'));
-app.use('/refresh', require('./backend/routes/refresh'));
-app.use('/logout', require('./backend/routes/logout'))
+app.use('/api/register', require('./backend/routes/register'));
+app.use('/api/auth', require('./backend/routes/auth'));
+app.use('/api/refresh', require('./backend/routes/refresh'));
+app.use('/api/logout', require('./backend/routes/logout'))
 
 // protected routes
 app.use(verifyJWT);
 
-app.use('/test', require('./backend/routes/test'))
+app.use('/api/test', require('./backend/routes/test'))
 
 app.use((req, res, next) => {
     console.log(`Unmatched route: ${req.method} ${req.originalUrl}`);

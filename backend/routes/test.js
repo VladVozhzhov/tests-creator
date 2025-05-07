@@ -7,6 +7,7 @@ router
     .get('/my-tests', testController.handleGetUserTests)
     .get('/user/:userId', testController.handleGetUserTests)
     .get('/:id', testController.handleGetTest)
-    .post('/', testController.handleCreateTest);
+    .post('/', testController.handleCreateTest)
+    .post('/:id/submit', testController.handleSubmitTest);
 
 module.exports = router;

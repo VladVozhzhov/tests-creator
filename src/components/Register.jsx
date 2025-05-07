@@ -39,7 +39,7 @@ const Register = () => {
     }
 
     try {
-      await axios.post('http://localhost:3500/register', { username, password });
+      await axios.post('/register', { username, password });
       navigate('/auth');
       setFormData({ username: '', password: '', confirmPassword: '' });
     } catch (error) {

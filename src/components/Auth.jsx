@@ -23,7 +23,7 @@ const Auth = () => {
         }
 
         try {
-            await axios.post('http://localhost:3500/auth', formData, { withCredentials: true });
+            await axios.post('/auth', formData, { withCredentials: true });
             navigate('/test');
             setFormData({ username: '', password: '' });
         } catch (err) {

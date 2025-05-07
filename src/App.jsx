@@ -8,21 +8,24 @@ import Create from "./components/Create";
 import TestPage from "./components/TestPage";
 import UserPage from "./components/UserPage";
 import Total from "./components/Total";
+import { DataProvider } from './context/DataContext';
 
 axios.defaults.withCredentials = true;
 
 function App() {
   return (
-    <Routes>
-      <Route path='/' element={<Home />}/>
-      <Route path='/register' element={<Register />}/>
-      <Route path='/auth' element={<Auth />}/>
-      <Route path='/test' element={<TestHome />} />
-      <Route path='/test/create' element={<Create />}/>
-      <Route path='/test/:id' element={<TestPage />}/>
-      <Route path='/test/user/:name' element={<UserPage />}/>
-      <Route path='/test/:id/total' element={<Total />}/>
-    </Routes>
+    <DataProvider>
+      <Routes>
+        <Route path='/' element={<Home />}/>
+        <Route path='/register' element={<Register />}/>
+        <Route path='/auth' element={<Auth />}/>
+        <Route path='/test' element={<TestHome />} />
+        <Route path='/test/create' element={<Create />}/>
+        <Route path='/test/:id' element={<TestPage />}/>
+        <Route path='/test/user/:name' element={<UserPage />}/>
+        <Route path='/test/:id/total' element={<Total />}/>
+      </Routes>
+    </DataProvider>
   )
 }
 

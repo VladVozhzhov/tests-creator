@@ -79,9 +79,90 @@ const handleCreateTest = async (req, res, next) => {
     }
 };
 
+const handleSubmitTest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { answers } = req.body;
+    console.log('Answers:', answers);
+    const userId = req.user._id;
+    
+    const test = await Test.findById(id).exec();
+    const user = await User.findById(userId).exec();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!test) return res.status(404).json({ message: 'Test not found' });
+    
+    const alreadyCompleted = user.completedTests.some(test => 
+      test.testId.toString() === id.toString()
+    );
+    
+    if (alreadyCompleted) {
+      return res.status(400).json({ 
+        message: 'You have already completed this test',
+        alreadySubmitted: true
+      });
+    }
+    
+    function arraysEqual(a, b) {
+      if (!Array.isArray(a) || !Array.isArray(b)) return false;
+      if (a.length !== b.length) return false;
+      const sortedA = [...a].sort();
+      const sortedB = [...b].sort();
+      return sortedA.every((val, idx) => val === sortedB[idx]);
+    }
+    
+    let totalScore = 0;
+    const questionResults = test.questions.map((question, index) => {
+      const userAnswer = answers[index];
+      const isCorrect = Array.isArray(question.correctAnswer) 
+        ? arraysEqual(question.correctAnswer, userAnswer)
+        : question.correctAnswer === userAnswer;
+      
+      const pointsEarned = isCorrect ? (question.points || 1) : 0;
+      totalScore += pointsEarned;
+      
+      return {
+        questionId: question._id,
+        correct: isCorrect,
+        pointsEarned
+      };
+    });
+    
+    const maxScore = test.questions.reduce((sum, q) => sum + (q.points || 1), 0);
+    
+    user.completedTests.push({
+      testId: id,
+      score: totalScore,
+      maxScore: maxScore,
+      dateCompleted: new Date(),
+      questionResults
+    });
+    
+    await user.save();
+    
+    if (test.views !== undefined) {
+      test.views += 1;
+    } else if (test.visits !== undefined) {
+      test.visits += 1;
+    }
+    await test.save();
+    
+    res.status(200).json({ 
+      message: 'Test submitted successfully', 
+      score: totalScore,
+      maxScore: maxScore,
+      results: questionResults
+    });
+    
+  } catch (err) {
+    console.error('Error submitting test:', err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
 module.exports = { 
     handleCreateTest, 
     handleGetTest,
     handleGetUserTests,
-    handleGetAllTests
+    handleGetAllTests,
+    handleSubmitTest,
 };

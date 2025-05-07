@@ -14,13 +14,18 @@ export const DataProvider = ({ children }) => {
     const fetchTests = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:3500/test', { withCredentials: true });
+        const response = await axios.get('/test', { withCredentials: true });
         setTests(response.data);
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch tests');
-        setLoading(false);
-        console.error('Error fetching tests:', err);
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          setTests([]);
+          setLoading(false);
+        } else {
+          setError('Failed to fetch tests');
+          setLoading(false);
+          console.error('Error fetching tests:', err);
+        }
       }
     };
 
