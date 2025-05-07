@@ -48,6 +48,74 @@ const handleGetAllTests = async (req, res) => {
   }
 };
 
+
+// Check if user has already submitted this test
+const handleTestStatus = async (req, res) => {
+  try {
+    const userId = req.user?._id;
+    const { id } = req.params;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findById(userId).exec();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const alreadySubmitted = user.completedTests.some(
+      test => test.testId.toString() === id.toString()
+    );
+
+    res.json({ alreadySubmitted });
+  } catch (err) {
+    console.error('Error checking test status:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Get test results for a user
+const handleTestResults = async (req, res) => {
+  try {
+    const userId = req.user?._id;
+    const { id } = req.params;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const user = await User.findById(userId).exec();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const test = await Test.findById(id).exec();
+    if (!test) return res.status(404).json({ message: 'Test not found' });
+
+    const completed = user.completedTests.find(
+      t => t.testId.toString() === id.toString()
+    );
+    if (!completed) {
+      return res.status(404).json({ message: 'No results found for this test' });
+    }
+
+    // Normalize answers keys to numbers for frontend compatibility
+    let answers = completed.answers || {};
+    if (answers && typeof answers === 'object') {
+      answers = Object.keys(answers).reduce((acc, key) => {
+        const numKey = isNaN(Number(key)) ? key : Number(key);
+        acc[numKey] = answers[key];
+        return acc;
+      }, {});
+    }
+
+    // Ensure results is always an array
+    const results = Array.isArray(completed.questionResults) ? completed.questionResults : [];
+
+    res.json({
+      test,
+      results,
+      answers
+    });
+  } catch (err) {
+    console.error('Error fetching test results:', err);
+    res.status(500).json({ message: err.message });
+  }
+}
+
+
+// Create a new test
 const handleCreateTest = async (req, res, next) => {
     try {
         const userId = req.user._id;
@@ -79,6 +147,7 @@ const handleCreateTest = async (req, res, next) => {
     }
 };
 
+// handle submitting test
 const handleSubmitTest = async (req, res) => {
   try {
     const { id } = req.params;
@@ -129,12 +198,16 @@ const handleSubmitTest = async (req, res) => {
     
     const maxScore = test.questions.reduce((sum, q) => sum + (q.points || 1), 0);
     
+    // Ensure answers is an object and not undefined
+    const userAnswers = answers && typeof answers === 'object' ? answers : {};
+
     user.completedTests.push({
       testId: id,
       score: totalScore,
       maxScore: maxScore,
       dateCompleted: new Date(),
-      questionResults
+      questionResults, // always an array
+      answers: userAnswers // store answers
     });
     
     await user.save();
@@ -159,10 +232,45 @@ const handleSubmitTest = async (req, res) => {
   }
 }
 
+// Handle liking a test
+const handleLikeTest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?._id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    const test = await Test.findById(id).exec();
+    if (!test) return res.status(404).json({ message: 'Test not found' });
+
+    const user = await User.findById(userId).lean().exec();
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Ensure likedTests is an array
+    const likedTests = Array.isArray(user.likedTests) ? user.likedTests.map(tid => tid.toString()) : [];
+
+    if (likedTests.includes(id.toString())) {
+      return res.status(400).json({ message: 'You have already liked this test', likes: test.likes || 0, alreadyLiked: true });
+    }
+
+    // Actually update the user document (not the lean copy)
+    await User.findByIdAndUpdate(userId, { $push: { likedTests: test._id } });
+
+    test.likes = (test.likes || 0) + 1;
+    await test.save();
+
+    res.json({ likes: test.likes, alreadyLiked: false });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = { 
     handleCreateTest, 
     handleGetTest,
     handleGetUserTests,
     handleGetAllTests,
     handleSubmitTest,
+    handleTestStatus,
+    handleTestResults,
+    handleLikeTest,
 };

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const TestPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [test, setTest] = useState(null);
   const [message, setMessage] = useState('');
-  const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -17,6 +17,11 @@ const TestPage = () => {
         setLoading(true);
         const response = await axios.get(`/test/${id}`, { withCredentials: true });
         setTest(response.data);
+        // Check if already submitted
+        const statusRes = await axios.get(`/test/${id}/status`, { withCredentials: true });
+        if (statusRes.data.alreadySubmitted) {
+          navigate(`/test/${id}/results`);
+        }
       } catch (err) {
         setError('Failed to fetch test');
       } finally {
@@ -24,7 +29,7 @@ const TestPage = () => {
       }
     };
     fetchTest();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleChange = (questionIndex, option, type) => {
     setAnswers(prev => {
@@ -50,20 +55,24 @@ const TestPage = () => {
         setMessage('You have already completed this test!');
         return;
       }
-      setScore(response.data.score);
-      setMaxScore(response.data.maxScore);
-      setResults(response.data.results);
+      navigate(`/test/${id}/results`);
       
     } catch (error) {
       if (error.response?.data?.alreadySubmitted) {
         setMessage('You have already completed this test!');
       } else {
-        setError('Error submitting test');
+        setError(`Error submitting test: ${error}`);
       }
     }
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
   if (error) return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
   if (!test) return null;
 

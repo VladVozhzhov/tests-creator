@@ -23,7 +23,7 @@ function App() {
         <Route path='/test/create' element={<Create />}/>
         <Route path='/test/:id' element={<TestPage />}/>
         <Route path='/test/user/:name' element={<UserPage />}/>
-        <Route path='/test/:id/total' element={<Total />}/>
+        <Route path='/test/:id/results' element={<Total />}/>
       </Routes>
     </DataProvider>
   )

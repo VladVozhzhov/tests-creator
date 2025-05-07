@@ -11,14 +11,25 @@ const userSchema = new Schema ({
     },
     likedTests: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Test' } ],
     createdTests: [ { type: mongoose.Schema.Types.ObjectId, ref: 'Test' } ],
-    completedTests: 
-    [
-        { 
-        testId: { type: mongoose.Schema.Types.ObjectId, ref: 'Test' },
-        score: { type: Number, required: true },
-        dateCompleted: { type: Date, default: Date.now }
+    completedTests: [
+        {
+          testId: {
+            type: require('mongoose').Schema.Types.ObjectId,
+            ref: 'Test'
+          },
+          score: Number,
+          maxScore: Number,
+          dateCompleted: Date,
+          questionResults: [
+            {
+              questionId: require('mongoose').Schema.Types.ObjectId,
+              correct: Boolean,
+              pointsEarned: Number
+            }
+          ],
+          answers: {} 
         }
-    ],
+      ],
     refreshToken: { type: String, required: false },
 }, { timestamps: true })
 
