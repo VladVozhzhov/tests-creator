@@ -42,7 +42,7 @@ export const DataProvider = ({ children }) => {
         sorted = sorted.sort((a, b) => b.likes - a.likes);
         break;
       case 'Most Visited':
-        sorted = sorted.sort((a, b) => b.views - a.views);
+        sorted = sorted.sort((a, b) => b.visits - a.visits);
         break;
       case 'Most Recent':
         sorted = sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

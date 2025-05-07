@@ -55,7 +55,7 @@ const TestHomeMain = () => {
         <p className="text-lg text-gray-700 mb-6">Join the fun and create your own test for others to take!</p>
         <Link 
           className="bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 inline-flex items-center"
-          to="/tests/create"
+          to="/test/create"
         >
           <PlusCircle size={20} className="mr-2" />
           Create Test

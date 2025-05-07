@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 
 const Total = () => {
@@ -143,6 +143,28 @@ const Total = () => {
             </div>
           );
         })}
+        <div className="bg-gray-50 rounded-lg shadow p-6">
+          <h3 className="text-xl font-bold mb-4">Test Results</h3>
+          <p className="text-gray-700">
+            You scored {
+              test.questions.reduce((acc, q, idx) => {
+                const r = results.find(r => r.questionId === q._id);
+                return acc + (r && r.correct ? (Number(q.points) || 1) : 0);
+              }, 0)
+            } out of {
+              test.questions.reduce((acc, q) => acc + (Number(q.points) || 1), 0)
+            } points.
+          </p>
+          <p className="text-gray-700">Total questions: {test.questions.length}</p>
+          <p className="text-gray-700">Correct answers: {results.filter(r => r.correct).length}</p>
+          <p className="text-gray-700">Incorrect answers: {results.filter(r => !r.correct).length}</p>
+        </div>
+        <Link
+          to={`/test`}
+          className="mt-4 inline-block bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600"
+        >
+          Back to Home
+        </Link>
       </div>
     </div>
   );
