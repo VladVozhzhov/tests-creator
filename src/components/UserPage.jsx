@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
+import { Heart, Eye, Clock } from 'lucide-react';
 
-// Sorting logic copied from DataContext
 const sortTests = (tests, selected) => {
   let sorted = [...tests]
   switch (selected) {
@@ -27,6 +27,15 @@ const UserPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState('Most Liked')
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
   useEffect(() => {
     const fetchUserTests = async () => {
@@ -63,65 +72,84 @@ const UserPage = () => {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <div className="flex flex-col items-center mb-10">
-        <div className="w-20 h-20 rounded-full bg-indigo-200 flex items-center justify-center text-4xl font-bold text-indigo-700 mb-4">
+    <div className="container mx-auto px-4 py-8">
+      <header className="flex flex-col items-center mb-10 bg-gray-50 rounded-xl shadow-md hover:scale-[1.01] transition duration-300 p-8">
+        <div className="w-20 h-20 rounded-full bg-indigo-200 flex items-center justify-center text-3xl font-bold text-indigo-700 mb-3 shadow-sm border-2 border-indigo-100">
           {name?.[0]?.toUpperCase()}
         </div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">{name}</h2>
-        <p className="text-gray-500">{tests.length} test{tests.length !== 1 ? 's' : ''} created</p>
-      </div>
-      <section>
-        <div className="flex flex-col items-center mb-8">
-          <label className="text-lg text-gray-700 mb-2" htmlFor="sortby">Sort by:</label>
-          <ul className="flex flex-row gap-4" id="sortby">
-            {['Most Liked', 'Most Visited', 'Most Recent'].map((item) => (
-              <li
-                key={item}
-                className={`flex items-center text-sm text-gray-700 cursor-pointer px-4 py-2 bg-white rounded-md shadow-sm hover:bg-gray-100 transition ${selected === item ? 'font-bold text-blue-500' : ''}`}
-                onClick={() => setSelected(item)}
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <h3 className="text-2xl font-semibold mb-6">
-          {selected === 'Most Liked' && 'Most Liked Tests'}
-          {selected === 'Most Visited' && 'Most Visited Tests'}
-          {selected === 'Most Recent' && 'Newest Tests'}
-        </h3>
-        {sortedTests.length === 0 ? (
-          <div className="text-gray-500 text-center py-10">
-            No tests created yet.
+        <h2 className="text-2xl font-bold text-gray-800 mb-1 tracking-tight">
+          {name}
+        </h2>
+        <p className="text-gray-500 text-base font-normal">
+          {tests.length} test{tests.length !== 1 ? 's' : ''} created
+        </p>
+      </header>
+      <main>
+        <div className="bg-gray-50 rounded-lg p-6 mb-12 shadow-md hover:scale-[1.01] transition duration-300">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+              {selected === 'Most Liked' && 'Most Liked Tests'}
+              {selected === 'Most Visited' && 'Most Visited Tests'}
+              {selected === 'Most Recent' && 'Newest Tests'}
+            </h3>
+            <div className="flex flex-wrap items-center gap-4">
+              <span className="text-gray-700">Sort by:</span>
+              <ul className="flex flex-wrap gap-2" id="sortby">
+                {['Most Liked', 'Most Visited', 'Most Recent'].map((item) => (
+                  <li
+                    key={item}
+                    className={`cursor-pointer px-4 py-2 rounded-md transition-colors ${
+                      selected === item
+                        ? 'bg-purple-100 text-purple-800 font-medium'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                    onClick={() => setSelected(item)}
+                  >
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedTests.map(test => (
-              <Link
-                key={test._id}
-                to={`/test/${test._id}`}
-                className="block bg-white rounded-lg shadow hover:shadow-lg transition p-6"
-              >
-                <div className="flex flex-col gap-2">
-                  <span className="text-xl font-bold text-purple-800">{test.name}</span>
-                  <span className="text-gray-500 text-sm">
-                    {test.questions?.length || 0} question{test.questions?.length !== 1 ? 's' : ''}
-                  </span>
-                  <div className="flex gap-4 text-sm text-gray-400 mt-2">
-                    <span>Likes: {test.likes || 0}</span>
-                    <span>Visits: {test.visits || 0}</span>
+          {sortedTests.length === 0 ? (
+            <div className="text-gray-500 text-center py-10">
+              No tests created yet.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedTests.map(test => (
+                <Link
+                  key={test._id}
+                  to={`/test/${test._id}`}
+                  className="block bg-white rounded-lg shadow-md hover:shadow-lg transition p-6"
+                >
+                  <div className="flex flex-col gap-2">
+                    <span className="text-xl font-bold text-purple-800">{test.name}</span>
+                    <span className="text-gray-500 text-sm">
+                      {test.questions?.length || 0} question{test.questions?.length !== 1 ? 's' : ''}
+                    </span>
+                    <div className="flex items-center justify-between text-sm text-gray-500 mt-2">
+                      <div className="flex items-center">
+                        <Heart size={16} className="text-red-500 mr-1" />
+                        <span>{test.likes}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Eye size={16} className="text-blue-500 mr-1" />
+                        <span>{test.visits}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Clock size={16} className="text-green-500 mr-1" />
+                        <span>{formatDate(test.createdAt)}</span>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-400 mt-2">
-                    Created: {new Date(test.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
-    </main>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   )
 }
 

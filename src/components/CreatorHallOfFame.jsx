@@ -26,7 +26,7 @@ const CreatorHallOfFame = () => {
   if (!creators.length) return null;
 
   return (
-    <section className="mb-12">
+    <section className="mb-12 bg-gray-50 p-6 rounded-lg shadow-md hover:scale-[1.01] transition duration-300">
       <h2 className="text-2xl font-bold text-center mb-6 text-yellow-600">Creator Hall of Fame</h2>
       <div className="flex flex-wrap justify-center gap-6">
         {creators.slice(0, 3).map((creator, idx) => (

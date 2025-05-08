@@ -5,7 +5,7 @@ import TestHomeFooter from './TestHomeFooter';
 
 const TestHome = () => {
   return (
-    <div className='bg-gradient-to-r from-gray-200 to-gray-300 shadow-md min-h-screen'>
+    <div className='min-h-screen'>
       <TestHomeHeader />
       <TestHomeMain />
       <TestHomeFooter />

@@ -1,40 +1,77 @@
 import { Link } from 'react-router-dom';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, CheckCircle, FileQuestion, PlusCircle, User } from 'lucide-react';
 
 // Particle Background Component
-const ParticleBg = () => {
+const ParticleBg = React.memo(() => (
+  <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-b from-indigo-900 to-[#282C35] opacity-90"></div>
+    {Array.from({ length: 40 }).map((_, i) => {
+      const size = Math.floor(Math.random() * 4) + 1;
+      const top = `${Math.random() * 100}%`;
+      const left = `${Math.random() * 100}%`;
+      const animationDuration = `${Math.random() * 30 + 10}s`;
+      return (
+        <div 
+          key={i}
+          className="absolute rounded-full bg-white opacity-60"
+          style={{
+            width: `${size}px`,
+            height: `${size}px`,
+            top,
+            left,
+            animation: `float ${animationDuration} infinite ease-in-out`,
+          }}
+        />
+      );
+    })}
+    <style jsx>{`
+      @keyframes float {
+        0%, 100% { transform: translate(0, 0); }
+        25% { transform: translate(20px, 20px); }
+        50% { transform: translate(-20px, 40px); }
+        75% { transform: translate(-40px, -20px); }
+      }
+    `}</style>
+  </div>
+));
+
+// Typewriter effect component
+const Typewriter = ({ words }) => {
+  const [displayText, setDisplayText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [wordIndex, setWordIndex] = useState(0);
+  const [typingSpeed, setTypingSpeed] = useState(100);
+
+  useEffect(() => {
+    const word = words[wordIndex % words.length];
+    let timer;
+    if (!isDeleting && displayText.length < word.length) {
+      timer = setTimeout(() => {
+        setDisplayText(word.substring(0, displayText.length + 1));
+        setTypingSpeed(100);
+      }, typingSpeed);
+    } else if (isDeleting && displayText.length > 0) {
+      timer = setTimeout(() => {
+        setDisplayText(word.substring(0, displayText.length - 1));
+        setTypingSpeed(40);
+      }, typingSpeed);
+    } else if (!isDeleting && displayText.length === word.length) {
+      timer = setTimeout(() => setIsDeleting(true), 1000);
+    } else if (isDeleting && displayText.length === 0) {
+      setIsDeleting(false);
+      setWordIndex((prev) => (prev + 1) % words.length);
+      setTypingSpeed(300);
+    }
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, wordIndex, words, typingSpeed]);
+
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-indigo-900 to-[#282C35] opacity-90"></div>
-      {Array.from({ length: 40 }).map((_, i) => {
-        const size = Math.floor(Math.random() * 4) + 1;
-        const top = `${Math.random() * 100}%`;
-        const left = `${Math.random() * 100}%`;
-        const animationDuration = `${Math.random() * 30 + 10}s`;
-        
-        return (
-          <div 
-            key={i}
-            className="absolute rounded-full bg-white opacity-60"
-            style={{
-              width: `${size}px`,
-              height: `${size}px`,
-              top,
-              left,
-              animation: `float ${animationDuration} infinite ease-in-out`,
-            }}
-          />
-        );
-      })}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translate(0, 0); }
-          25% { transform: translate(20px, 20px); }
-          50% { transform: translate(-20px, 40px); }
-          75% { transform: translate(-40px, -20px); }
-        }
-      `}</style>
+    <div className="w-full flex justify-center items-center mt-2 mb-8 z-20 pointer-events-none select-none">
+      <span className="text-white text-4xl font-mono tracking-widest drop-shadow-lg">
+        {displayText}
+        <span className="border-r-2 border-white animate-pulse ml-1"></span>
+      </span>
     </div>
   );
 };
@@ -42,7 +79,7 @@ const ParticleBg = () => {
 // Feature Item Component
 const FeatureItem = ({ icon: Icon, title, description }) => {
   return (
-    <div className="flex flex-col items-center text-center p-4">
+    <div className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-lg shadow-md hover:scale-[1.01] transition duration-300">
       <div className="bg-indigo-100 p-4 rounded-full mb-4">
         <Icon size={24} className="text-indigo-600" />
       </div>
@@ -77,16 +114,20 @@ const Home = () => {
     }
   ];
 
+  const typewriterWords = ["Create Custom Tests", "Instant Grading", "User Profiles"];
+
   return (
     <main className="font-sans">
       {/* Hero Section */}
-      <header className="bg-indigo-900 relative overflow-hidden flex flex-col items-center justify-center min-h-screen">
+      <header className="bg-indigo-900 relative overflow-hidden flex flex-col items-center justify-center min-h-screen py-12 md:py-20">
         <ParticleBg />
-        <div className="container mx-auto px-4 py-24 relative z-10 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">Test Creator</h1>
-            <p className="text-xl md:text-2xl text-indigo-100 max-w-2xl mx-auto mb-10">
-                Create, share, and complete interactive tests with ease. Perfect for educators, trainers, and learners.
-            </p>
+        <div className="container mx-auto px-4 py-12 md:py-16 relative z-10 text-center">
+          <h1 className="text-5xl md:text-6xl mb-10 font-bold text-white">Test Creator</h1>
+          {/* Typewriter */}
+          <Typewriter words={typewriterWords} />
+          <p className="text-xl md:text-2xl text-indigo-100 max-w-2xl mx-auto my-10">
+            Create, share, and complete interactive tests with ease. Perfect for educators, trainers, and learners.
+          </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link className="bg-white text-indigo-700 px-8 py-3 rounded-lg font-bold hover:bg-indigo-50 transition-colors flex items-center justify-center" to="/register">
               Create Test <PlusCircle className="ml-2" size={18} />
@@ -122,12 +163,12 @@ const Home = () => {
             Join thousands of educators and learners already using our platform.
           </p>
           <div className="max-w-md mx-auto">
-            <div className="flex flex-col sm:flex-row gap-2 items-center justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
               <Link className="bg-indigo-600 px-6 py-3 rounded-lg font-bold hover:bg-indigo-700 transition-colors" to="/auth">
                 Log In
               </Link>
               <Link className="bg-indigo-600 px-6 py-3 rounded-lg font-bold hover:bg-indigo-700 transition-colors" to="/register">
-                Sign Up Free
+                Sign Up For Free
               </Link>
             </div>
           </div>
