@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
+    "start": "node server",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",

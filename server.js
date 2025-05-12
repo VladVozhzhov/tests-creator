@@ -24,7 +24,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // serve static files
-app.use('/', express.static(path.join(__dirname, '/public')));
+app.use('/', express.static(path.join(__dirname, '/dist')));
 
 // routes
 app.use('/', require('./backend/routes/root'));
@@ -37,6 +37,10 @@ app.use('/api/logout', require('./backend/routes/logout'))
 app.use(verifyJWT);
 
 app.use('/api/test', require('./backend/routes/test'))
+
+app.get('*splat', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+})
 
 app.use((req, res, next) => {
     console.log(`Unmatched route: ${req.method} ${req.originalUrl}`);
