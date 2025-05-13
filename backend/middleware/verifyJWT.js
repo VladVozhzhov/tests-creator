@@ -2,17 +2,14 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const verifyJWT = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
     let token;
-    
-    if (authHeader) {
-        token = authHeader.split(' ')[1];
-    } else if (req.cookies?.accessToken) {
+
+    if (req.cookies?.accessToken) {
         token = req.cookies.accessToken;
     } else {
         return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
-    
+
     jwt.verify(
         token,
         process.env.ACCESS_TOKEN_SECRET,

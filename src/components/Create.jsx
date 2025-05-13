@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { X, Check } from 'lucide-react';
 
 const inputTypes = [
   { value: 'radio', label: 'Single choice' },
@@ -9,7 +10,10 @@ const inputTypes = [
 ];
 
 const Create = () => {
+  const { id } = useParams();
   const [testName, setTestName] = useState('');
+  const navigate = useNavigate();
+  const [message, setMessage] = useState('');
   const [questions, setQuestions] = useState([
     {
       content: '',
@@ -20,8 +24,31 @@ const Create = () => {
     }
   ]);
 
+  useEffect(() => {
+    if (id) {
+      const fetchTest = async () => {
+        try {
+          const response = await axios.get(`/test/${id}`);
+          const test = response.data;
+          setTestName(test.name);
+          const formattedQuestions = test.questions.map(q => ({
+            content: q.content,
+            inputType: q.inputType,
+            points: q.points,
+            options: q.answersList ? Object.values(q.answersList) : [],
+            correctAnswer: q.correctAnswer
+          }));
+          setQuestions(formattedQuestions);
+        } catch (err) {
+          console.error("Failed to load test for editing:", err);
+        }
+      };
+      fetchTest();
+    }
+  }, [id]);
+
   const handleQuestionChange = (idx, field, value) => {
-    setQuestions(qs => 
+    setQuestions(qs =>
       qs.map((q, i) => {
         if (i !== idx) return q;
         const updated = { ...q, [field]: value };
@@ -43,7 +70,7 @@ const Create = () => {
   };
 
   const handleOptionChange = (qIdx, oIdx, value) => {
-    setQuestions(qs => 
+    setQuestions(qs =>
       qs.map((q, i) => {
         if (i !== qIdx) return q;
         const newOptions = q.options.map((opt, j) => (j === oIdx ? value : opt));
@@ -53,17 +80,15 @@ const Create = () => {
   };
 
   const addOption = (qIdx) => {
-    setQuestions(qs => 
+    setQuestions(qs =>
       qs.map((q, i) =>
-        i !== qIdx
-          ? q
-          : { ...q, options: [...q.options, ''] }
+        i !== qIdx ? q : { ...q, options: [...q.options, ''] }
       )
     );
   };
 
   const removeOption = (qIdx, oIdx) => {
-    setQuestions(qs => 
+    setQuestions(qs =>
       qs.map((q, i) => {
         if (i !== qIdx) return q;
         const newOptions = q.options.filter((_, j) => j !== oIdx);
@@ -99,7 +124,7 @@ const Create = () => {
   };
 
   const markCorrect = (qIdx, optIdx) => {
-    setQuestions(qs => 
+    setQuestions(qs =>
       qs.map((q, i) => {
         if (i !== qIdx) return q;
         if (q.inputType === 'radio') {
@@ -116,27 +141,68 @@ const Create = () => {
     );
   };
 
+  const validateTest = () => {
+    if (!testName.trim()) {
+      return 'Test name is required.';
+    }
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      if (!q.content || !q.content.trim()) {
+        return `Question ${i + 1}: Content is required.`;
+      }
+      if (q.inputType !== 'text' && (!q.options || q.options.some(opt => !opt || !opt.trim()))) {
+        return `Question ${i + 1}: All options must have content.`;
+      }
+      if (
+        (q.inputType === 'radio' && (q.correctAnswer === null || q.correctAnswer === undefined))
+        || (q.inputType === 'checkbox' && (!Array.isArray(q.correctAnswer) || q.correctAnswer.length === 0))
+        || (q.inputType === 'text' && (!q.correctAnswer || !q.correctAnswer.trim()))
+      ) {
+        return `Question ${i + 1}: Correct answer is required.`;
+      }
+    }
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage('');
+    const error = validateTest();
+    if (error) {
+      setMessage(error);
+      return;
+    }
+    const payload = {
+      name: testName,
+      questions: questions.map(q => {
+        const correctAnswer =
+          q.inputType === 'radio' ? q.correctAnswer :
+          q.inputType === 'checkbox' ? (Array.isArray(q.correctAnswer) ? q.correctAnswer : []) :
+          q.correctAnswer;
+        const answersList = q.inputType !== 'text'
+          ? q.options.reduce((acc, opt, idx) => ({ ...acc, [idx]: opt }), {})
+          : undefined;
+        return { content: q.content, inputType: q.inputType, points: q.points, answersList, correctAnswer };
+      })
+    };
+
     try {
-      await axios.post('/test', {
-        name: testName,
-        questions: questions.map(q => {
-          const correctAnswer =
-            q.inputType === 'radio' ? q.correctAnswer :
-            q.inputType === 'checkbox' ? (Array.isArray(q.correctAnswer) ? q.correctAnswer : []) :
-            q.correctAnswer;
-          const answersList = q.inputType !== 'text'
-            ? q.options.reduce((acc, opt, idx) => ({ ...acc, [idx]: opt }), {})
-            : undefined;
-          return { content: q.content, inputType: q.inputType, points: q.points, answersList, correctAnswer };
-        })
-      }, { withCredentials: true });
+      if (id) {
+        await axios.patch(`/test/${id}`, payload, { withCredentials: true });
+      } else {
+        await axios.post('/test', payload, { withCredentials: true });
+      }
+      setMessage(`Test ${id ? 'updated' : 'created'} successfully!`);
+      setTimeout(() => {
+        window.location.href = '/test';
+      }, 1500);
+      if (!id) {
+        setTestName('');
+        setQuestions([{ content: '', inputType: 'radio', points: 1, options: [''], correctAnswer: null }]);
+      }
     } catch (err) {
+      setMessage('Failed to save test.');
       console.error(err);
-    } finally {
-      setTestName('');
-      setQuestions([{ content: '', inputType: 'radio', points: 1, options: [''], correctAnswer: null }]);
     }
   };
 
@@ -144,8 +210,10 @@ const Create = () => {
     <div className="min-h-screen bg-gray-100 py-10">
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8 flex flex-col gap-8">
         <div className="flex flex-row justify-between items-center mb-4">
-          <h2 className="text-3xl font-bold text-purple-800">Create New Test</h2>
-          <Link to="/test" className="text-xl hover:underline hover:text-purple-700">Go to home page</Link>
+          <h2 className="text-3xl font-bold text-purple-800">
+            {id ? 'Edit Test' : 'Create New Test'}
+          </h2>
+          <Link to="/test" className="text-xl bg-purple-300 hover:bg-purple-400 p-2 rounded-md transition duration-300">Go to home page</Link>
         </div>
         <div>
           <label className="block font-semibold text-gray-700">Test Name</label>
@@ -160,7 +228,7 @@ const Create = () => {
           <div key={idx} className="bg-gray-50 rounded-lg shadow p-6">
             <div className="flex justify-between mb-2">
               <span className="font-semibold text-lg">Question {idx + 1}</span>
-              {questions.length > 1 && <button type="button" className="text-red-500" onClick={() => removeQuestion(idx)}>Remove</button>}
+              {questions.length > 1 && <button type="button" className="text-red-500 hover:text-red-700 hover:underline cursor-pointer transition duration-300" onClick={() => removeQuestion(idx)}>Remove</button>}
             </div>
             <div className="mb-4">
               <label className="block text-gray-700">Content</label>
@@ -211,9 +279,9 @@ const Create = () => {
                         : 'bg-gray-200 text-gray-700 border-gray-300 hover:bg-green-100'}`}
                       onClick={() => markCorrect(idx, oIdx)}
                     >
-                      {isOptionCorrect(q, oIdx) ? '✅' : q.inputType === 'radio' ? '❌' : '❌'}
+                      {isOptionCorrect(q, oIdx) ? <Check /> : <X />}
                     </button>
-                    {q.options.length > 1 && <button type="button" className="text-red-500" onClick={() => removeOption(idx, oIdx)}>Remove</button>}
+                    {q.options.length > 1 && <button type="button" className="text-red-500 hover:text-red-700 hover:underline cursor-pointer transition duration-300" onClick={() => removeOption(idx, oIdx)}>Remove</button>}
                   </div>
                 ))}
                 <button type="button" className="text-blue-600" onClick={() => addOption(idx)}>Add Option</button>
@@ -232,9 +300,12 @@ const Create = () => {
             )}
           </div>
         ))}
+        <div className={`text-2xl font-bold ${message.startsWith('Test created') ? 'text-green-700' : 'text-red-600'}`}>{message}</div>
         <div className="flex gap-4">
-          <button type="button" className="bg-green-500 text-white px-4 py-2 rounded" onClick={addQuestion}>Add Question</button>
-          <button type="submit" className="bg-purple-700 text-white px-4 py-2 rounded">Save Test</button>
+          <button type="button" className="bg-blue-500 hover:bg-blue-500 cursor-pointer transition duration-300 text-white px-4 py-2 rounded" onClick={addQuestion}>Add Question</button>
+          <button type="submit" className="bg-purple-700 hover:bg-purple-800 cursor-pointer transition duration-300 text-white px-4 py-2 rounded">
+            {id ? 'Update Test' : 'Save Test'}
+          </button>
         </div>
       </form>
     </div>

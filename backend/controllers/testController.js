@@ -276,14 +276,66 @@ const handleLikeTest = async (req, res) => {
   }
 };
 
+// Handle updating an existing test
+const handleUpdateTest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, questions } = req.body;
+
+    if (!name || !Array.isArray(questions)) {
+      return res.status(400).json({ message: 'Test name and questions are required.' });
+    }
+
+    // Find the test by ID and update it
+    const updatedTest = await Test.findByIdAndUpdate(
+      id,
+      { name, questions },
+      { new: true }
+    );
+
+    if (!updatedTest) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+
+    res.status(200).json({ message: 'Test updated successfully', test: updatedTest });
+  } catch (err) {
+    console.error('Error updating test:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const handleDeleteTest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedTest = await Test.findByIdAndDelete(id);
+
+    if (!deletedTest) {
+      return res.status(404).json({ message: 'Test not found' });
+    }
+
+    await User.updateMany(
+      { createdTests: id },
+      { $pull: { createdTests: id } }
+    );
+
+    res.status(200).json({ message: 'Test deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting test:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = { 
-    handleCreateTest, 
-    handleGetTest,
-    handleGetUserTests,
-    handleGetAllTests,
-    handleSubmitTest,
-    handleTestStatus,
-    handleTestResults,
-    handleLikeTest,
-    handleGetTestsByUsername,
+  handleCreateTest, 
+  handleGetTest,
+  handleGetUserTests,
+  handleGetAllTests,
+  handleSubmitTest,
+  handleTestStatus,
+  handleTestResults,
+  handleLikeTest,
+  handleGetTestsByUsername,
+  handleUpdateTest,
+  handleDeleteTest,
 };

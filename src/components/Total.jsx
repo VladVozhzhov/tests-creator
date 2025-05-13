@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import hasAccessToken from '../utils/hasAccessToken';
 
 const Total = () => {
   const { id } = useParams();
@@ -14,16 +15,58 @@ const Total = () => {
 
   useEffect(() => {
     const fetchResults = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`/test/${id}/results`, { withCredentials: true });
-        setTest(res.data.test);
-        setResults(res.data.results);
-        setAnswers(res.data.answers);
-      } catch (err) {
-        setError('Failed to fetch results');
-      } finally {
-        setLoading(false);
+      setLoading(true);
+      setError('');
+      if (hasAccessToken()) {
+        try {
+          const res = await axios.get(`/test/${id}/results`, { withCredentials: true });
+          setTest(res.data.test);
+          setResults(res.data.results);
+          setAnswers(res.data.answers);
+        } catch (err) {
+          setError('Failed to fetch results');
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        try {
+          const testRes = await axios.get(`/test/${id}`);
+          setTest(testRes.data);
+
+          const local = localStorage.getItem(`testResult_${id}`);
+          if (!local) {
+            setError('No local test result found.');
+            setResults(null);
+            setAnswers(null);
+            setLoading(false);
+            return;
+          }
+          const parsed = JSON.parse(local);
+          const questionResults = (testRes.data.questions || []).map((question, idx) => {
+            const userAnswer = parsed.answers[idx];
+            let isCorrect = false;
+            if (Array.isArray(question.correctAnswer)) {
+              isCorrect =
+                Array.isArray(userAnswer) &&
+                question.correctAnswer.length === userAnswer.length &&
+                question.correctAnswer.every(val => userAnswer.includes(val)) &&
+                userAnswer.every(val => question.correctAnswer.includes(val));
+            } else {
+              isCorrect = String(question.correctAnswer) === String(userAnswer);
+            }
+            return {
+              questionId: question._id,
+              correct: isCorrect,
+              pointsEarned: isCorrect ? (question.points || 1) : 0,
+            };
+          });
+          setResults(questionResults);
+          setAnswers(parsed.answers);
+        } catch (err) {
+          setError('Failed to load test or local result');
+        } finally {
+          setLoading(false);
+        }
       }
     };
     fetchResults();
@@ -96,7 +139,7 @@ const Total = () => {
       </div>
     );
   }
-  if (!answers || Object.keys(answers).length === 0) {
+  if (!answers || answers.length === 0) {
     return (
       <div className="flex justify-center items-center h-screen text-gray-500">
         No answers found for this test.
@@ -128,7 +171,7 @@ const Total = () => {
           const isCorrect = result?.correct;
           const userAnswer = answers[index];
           return (
-            <div key={index} className="bg-gray-50 rounded-lg shadow p-6 mb-4">
+            <div key={question._id} className="bg-gray-50 rounded-lg shadow p-6 mb-4">
               <div className="mb-2">
                 <span className="font-semibold text-lg">
                   {index + 1}. {question.content}

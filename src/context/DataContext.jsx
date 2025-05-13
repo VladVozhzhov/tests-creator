@@ -10,6 +10,24 @@ export const DataProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const fetchTests = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/test', { withCredentials: true });
+        setTests(response.data);
+        setLoading(false);
+      } catch (err) {
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          setTests([]);
+          setLoading(false);
+        } else {
+          setError('Failed to fetch tests');
+          setLoading(false);
+          console.error('Error fetching tests:', err);
+        }
+      }
+    };
+
   useEffect(() => {
     const fetchTests = async () => {
       try {
@@ -60,7 +78,8 @@ export const DataProvider = ({ children }) => {
     tests,
     sortedTests,
     loading,
-    error
+    error,
+    fetchTests,
   };
 
   return (

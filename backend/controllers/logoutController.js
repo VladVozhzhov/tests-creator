@@ -4,13 +4,13 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const handleLogout = async (req, res) => {
   const cookies = req.cookies;
-  if (!cookies?.jwt) return res.sendStatus(204).json({ message: 'No refresh token' }); 
+  if (!cookies?.jwt) return res.sendStatus(204).json({ message: 'No token' }); 
 
-  const refreshToken = cookies.jwt;
-  const foundUser = await User.findOne({ refreshToken }).exec();
+  const accessToken = cookies.jwt;
+  const foundUser = await User.findOne({ accessToken }).exec();
 
   if (foundUser) {
-    foundUser.refreshToken = '';
+    foundUser.accessToken = '';
     await foundUser.save();
   }
 

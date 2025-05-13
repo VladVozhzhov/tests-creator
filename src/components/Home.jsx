@@ -132,6 +132,9 @@ const Home = () => {
             <Link className="bg-white text-indigo-700 px-8 py-3 rounded-lg font-bold hover:bg-indigo-50 transition-colors flex items-center justify-center" to="/register">
               Create Test <PlusCircle className="ml-2" size={18} />
             </Link>
+            <Link className="bg-white text-indigo-700 px-8 py-3 rounded-lg font-bold hover:bg-indigo-50 transition-colors flex items-center justify-center" to="/test">
+              Browse Tests <BookOpen className="ml-2" size={18} />
+            </Link>
           </div>
         </div>
         

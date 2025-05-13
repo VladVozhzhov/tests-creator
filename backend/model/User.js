@@ -30,7 +30,6 @@ const userSchema = new Schema ({
           answers: {} 
         }
       ],
-    refreshToken: { type: String, required: false },
 }, { timestamps: true })
 
 module.exports = mongoose.model('User', userSchema)

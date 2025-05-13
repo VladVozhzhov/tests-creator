@@ -30,12 +30,7 @@ app.use('/', express.static(path.join(__dirname, '/dist')));
 app.use('/', require('./backend/routes/root'));
 app.use('/api/register', require('./backend/routes/register'));
 app.use('/api/auth', require('./backend/routes/auth'));
-app.use('/api/refresh', require('./backend/routes/refresh'));
-app.use('/api/logout', require('./backend/routes/logout'))
-
-// protected routes
-app.use(verifyJWT);
-
+app.use('/api/logout', require('./backend/routes/logout'));
 app.use('/api/test', require('./backend/routes/test'))
 
 app.get('*splat', (req, res) => {

@@ -20,6 +20,7 @@ function App() {
         <Route path='/register' element={<Register />}/>
         <Route path='/auth' element={<Auth />}/>
         <Route path='/test' element={<TestHome />} />
+        <Route path='/test/edit/:id' element={<Create />}/>
         <Route path='/test/create' element={<Create />}/>
         <Route path='/test/:id' element={<TestPage />}/>
         <Route path='/test/user/:name' element={<UserPage />}/>

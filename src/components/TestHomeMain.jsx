@@ -1,22 +1,67 @@
-import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext, useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { DataContext } from '../context/DataContext';
 import TestCard from './TestCard';
 import { PlusCircle } from 'lucide-react';
 import CreatorHallOfFame from './CreatorHallOfFame';
+import hasAccessToken from '../utils/hasAccessToken';
+import axios from 'axios';
 
 const PAGE_SIZE = 9;
 
 const TestHomeMain = () => {
-  const { selected, setSelected, sortedTests, loading, error } = useContext(DataContext);
+  const { selected, setSelected, sortedTests, loading, error, fetchTests } = useContext(DataContext);
   const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+  const [currentAuthor, setCurrentAuthor] = useState(null);
+  const [deletedTestId, setDeletedTestId] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get('/auth/check', { withCredentials: true });
+        setCurrentAuthor(response.data.user.UserInfo.username); 
+      } catch (err) {
+        setCurrentAuthor(null);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const testsToShow = React.useMemo(() => {
+    if (!searchTerm) return sortedTests;
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    return sortedTests.filter(test =>
+      (test.name && test.name.toLowerCase().includes(lowerCaseSearchTerm))
+    );
+  }, [searchTerm, sortedTests]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selected]);
+
+  const totalPages = Math.ceil(testsToShow.length / PAGE_SIZE);
+  // Filter out deleted test from pagedTests
+  const pagedTests = useMemo(() => {
+    let filtered = testsToShow;
+    if (deletedTestId) {
+      filtered = filtered.filter(test => test._id !== deletedTestId);
+    }
+    return filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  }, [testsToShow, page, deletedTestId]);
 
   const handleSelect = (item) => {
-      setSelected(item);
+    setSelected(item);
   };
 
-  const totalPages = Math.ceil(sortedTests.length / PAGE_SIZE);
-  const pagedTests = sortedTests.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleTestDeleted = (id) => {
+    setDeletedTestId(id);
+  };
 
   const renderTests = () => {
     if (loading) {
@@ -31,14 +76,17 @@ const TestHomeMain = () => {
       return (
         <div className="text-center py-10">
           <p className="text-red-500">{error}</p>
-          <button className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors">
+          <button 
+            className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
+            onClick={fetchTests}
+          >
             Try Again
           </button>
         </div>
       );
     }
 
-    if (sortedTests.length === 0) {
+    if (testsToShow.length === 0) {
       return (
         <div className="text-center py-10">
           <p className="text-gray-500">No tests available</p>
@@ -53,7 +101,12 @@ const TestHomeMain = () => {
       <>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pagedTests.map((test) => (
-            <TestCard key={test._id} test={test} />
+            <TestCard
+              key={test._id}
+              test={test}
+              currentAuthor={currentAuthor}
+              onDelete={handleTestDeleted}
+            />
           ))}
         </div>
         {totalPages > 1 && (
@@ -93,13 +146,29 @@ const TestHomeMain = () => {
         <section className="bg-gray-50 rounded-lg p-8 mb-12 text-center shadow-md hover:scale-[1.01] transition duration-300">
           <h2 className="text-3xl font-bold text-gray-800 mb-4">Create Your Own Test</h2>
           <p className="text-lg text-gray-700 mb-6">Join the fun and create your own test for others to take!</p>
-          <Link 
-            className="bg-purple-600 text-white px-6 py-3 rounded-md hover:bg-purple-700 transition-colors inline-flex items-center"
-            to="/test/create"
+          <button
+            className="cursor-pointer bg-purple-600 text-white px-6 py-3 rounded-md hover:bg-purple-700 transition-colors inline-flex items-center"
+            onClick={
+              hasAccessToken()
+                ? () => navigate('/test/create')
+                : () => {
+                    navigate('/auth');
+                  }
+            }
           >
             <PlusCircle size={20} className="mr-2" />
             Create Test
-          </Link>
+          </button>
+        </section>
+
+        <section className="bg-gray-50 rounded-lg p-6 mb-12 shadow-md hover:scale-[1.01] transition duration-300">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Search for Tests</h2>
+          <input 
+            className='border border-gray-300 rounded-md p-2 w-full mt-4 focus:outline-none focus:ring-2 focus:ring-purple-600 transition duration-300'
+            type='text'
+            onChange={handleSearch}
+            value={searchTerm}
+          />
         </section>
 
         <section className="bg-gray-50 rounded-lg p-6 mb-12 shadow-md hover:scale-[1.01] transition duration-300">

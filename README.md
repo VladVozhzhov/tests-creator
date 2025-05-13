@@ -41,11 +41,10 @@
 ###
 
 <ul>
-  <li>Go to a directory with module 'CommonJS' and type in the console twice: <pre><code>require('crypto').randomBytes(64).toString('hex')</code></pre></li>
+  <li>Go to a directory with module 'CommonJS' and type in the console: <pre><code>require('crypto').randomBytes(64).toString('hex')</code></pre></li>
   <li>go to this project's directory and create a .env file in the root and paste:
     <pre>
       <code>ACCESS_TOKEN_SECRET="first code"</code>
-      <code>REFRESH_TOKEN_SECRET="second code"</code>
       <code>DATABASE_URI=</code>
       <code>NODE_ENV=production</code>
       <code>PORT=3500</code>
@@ -62,7 +61,7 @@
 <ul>
   <li>Go to <a href="https://www.mongodb.com/">MongoDB</a></li>
   <li>Create an account or sign in</li>
-  <li>Create a new project)</li>
+  <li>Create a new project</li>
   <li>Create a cluster</li>
   <li>Then follow the instuctions and copy the URI</li>
   <li>Go to your .env and paste in the URI to <pre><code>DATABASE_URI</code></pre></li>
@@ -89,7 +88,7 @@
 
 <pre>
   <code>
-    node server
+    npm start
   </code>
 </pre>
 
