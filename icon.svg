@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bold Clipboard Base with shadow -->
+  <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+    <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#4338ca" flood-opacity="0.25"/>
+  </filter>
+  <rect x="40" y="40" width="120" height="120" rx="18" fill="#fff" stroke="#4338ca" stroke-width="8" filter="url(#shadow)" />
+  
+  <!-- Clipboard Top (thicker, simpler) -->
+  <rect x="70" y="22" width="60" height="32" rx="12" fill="#6366f1" stroke="#4338ca" stroke-width="6"/>
+  
+  <!-- Large Checkmark -->
+  <polyline points="75,110 95,130 135,80" fill="none" stroke="#22c55e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
